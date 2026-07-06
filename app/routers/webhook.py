@@ -1,3 +1,5 @@
+from typing import Optional
+
 from fastapi import (
     APIRouter,
     Depends,
@@ -8,12 +10,9 @@ from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.schemas.webhook import NombaWebhookPayload
-from app.services.nomba_signature_service import (
-    NombaSignatureService,
-)
-from app.services.payment_webhook_service import (
-    PaymentWebhookService,
-)
+from app.services.nomba_signature_service import NombaSignatureService
+from app.services.payment_webhook_service import PaymentWebhookService
+
 
 router = APIRouter(
     prefix="/webhooks",
@@ -21,28 +20,28 @@ router = APIRouter(
 )
 
 
+
 @router.post("/nomba")
 async def nomba_webhook(
     request: Request,
     payload: NombaWebhookPayload,
     db: Session = Depends(get_db),
-    nomba_signature: str | None = Header(None),
+    nomba_signature: Optional[str] = Header(default=None),
+    nomba_timestamp: Optional[str] = Header(default=None),
 ):
-
-    raw_body = await request.body()
-
-    if nomba_signature:
         NombaSignatureService.verify(
-            raw_body,
-            nomba_signature,
+            payload=payload,
+            signature=nomba_signature,
+            timestamp=nomba_timestamp,
     )
 
-    payment = PaymentWebhookService.process(
-        db,
-        payload,
+        result = PaymentWebhookService.process(
+            db,
+            payload,
     )
 
-    return {
-        "success": True,
-        "payment_id": payment.id,
+        return {
+            "success": True,
+            "duplicate": result["duplicate"],
+            "payment_id": result["payment"].id,
     }

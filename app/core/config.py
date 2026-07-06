@@ -28,7 +28,7 @@ class Settings(BaseSettings):
     NOMBA_SUB_ACCOUNT_ID: str
 
     # Make optional until you receive it
-    NOMBA_WEBHOOK_SECRET: Optional[str] = None
+    NOMBA_WEBHOOK_SECRET: str
 
     # ==========================
     # App

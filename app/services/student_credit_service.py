@@ -28,8 +28,7 @@ class StudentCreditService:
         )
 
         db.add(credit)
-        db.commit()
-        db.refresh(credit)
+        
 
         return credit
 
