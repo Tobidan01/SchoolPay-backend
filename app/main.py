@@ -2,8 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.database import Base, engine
 from app.core.config import settings
-from app.models.user import User
-from app.core.security import hash_password
+
 
 from app.routers import (
     auth,
@@ -16,19 +15,13 @@ from app.routers import (
     webhook,
 )
 
-admin = User(
-    first_name="Admin",
-    last_name="User",
-    email="admin@schoolpay.com",
-    password_hash=hash_password("Admin123@"),
-    role="ADMIN",
-)
+
 
 app = FastAPI(
     title=settings.APP_NAME,
     version="1.0.0",
 )
-Base.metadata.create_all(bind=engine)
+
 
 app.add_middleware(
     CORSMiddleware,
