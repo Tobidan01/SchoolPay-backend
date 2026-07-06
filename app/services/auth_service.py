@@ -1,3 +1,5 @@
+import email
+
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
@@ -5,6 +7,7 @@ from app.core.security import (
     create_access_token,
     verify_password,
 )
+from app.models import user
 from app.models.user import User
 
 
@@ -22,17 +25,26 @@ class AuthService:
             .first()
         )
 
+        print("====================================")
+        print("Login Email:", email)
+        print("User Found:", user is not None)
+
+        if user:
+            print("DB Email:", user.email)
+            print("Password Hash:", user.password_hash)
+            print(
+                "Password Match:",
+                verify_password(password, user.password_hash),
+            )
+        print("====================================")
+
         if not user:
             return None
 
-        if not verify_password(
-            password,
-            user.password_hash,
-        ):
+        if not verify_password(password, user.password_hash):
             return None
 
         return user
-
     @staticmethod
     def login(
         db: Session,
