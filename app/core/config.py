@@ -40,7 +40,7 @@ class Settings(BaseSettings):
     # ==========================
     # Frontend
     # ==========================
-    FRONTEND_URL: str = "https://github.com/littlebigFM/SchoolPay"
+    FRONTEND_URL: str = "https://school-pay-vsqq.vercel.app"
 
     model_config = SettingsConfigDict(
         env_file=".env",
