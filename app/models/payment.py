@@ -141,8 +141,6 @@ class Payment(Base):
         String(255),
         nullable=True,
     )
-
-
     
     payer_account_number = Column(
         String(50),

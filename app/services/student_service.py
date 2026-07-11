@@ -1,14 +1,18 @@
+from email.mime import image
 import re
 from uuid import UUID
+from fastapi import UploadFile
 from sqlalchemy.orm import Session
-
+from fastapi import HTTPException, status
 from app.models.class_model import Class
 from app.models.student import Student
+from app.schemas import student
 from app.schemas.student import (
     StudentCreate,
     StudentStatus,
     StudentUpdate,
 )
+from app.services.cloudinary_service import CloudinaryService
 from app.services.virtual_account_service import (
     VirtualAccountService,
 )
@@ -56,6 +60,7 @@ class StudentService:
     def create_student(
         db: Session,
         payload: StudentCreate,
+        image: UploadFile | None = None,
     ):
         try:
 
@@ -91,9 +96,10 @@ class StudentService:
                 )
 
                 if existing_email:
-                    raise ValueError(
-                        "Student email already exists."
-                    )
+                    raise HTTPException(
+                        status_code=status.HTTP_409_CONFLICT,
+                        detail="Student email already exists."
+                )
 
             # ===========================================
             # Generate Admission Number
@@ -119,6 +125,21 @@ class StudentService:
 
             # Generates UUID before commit
             db.flush()
+
+
+
+            photo_url = None
+            photo_public_id = None
+
+            if image:
+
+                uploaded = CloudinaryService.upload_image(image)
+
+                photo_url = uploaded["url"]
+                photo_public_id = uploaded["public_id"]
+
+            student.photo_url = photo_url
+            student.photo_public_id = photo_public_id
 
             # ===========================================
             # Create Virtual Account

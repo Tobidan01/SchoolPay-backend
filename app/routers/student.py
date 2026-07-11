@@ -1,6 +1,8 @@
+from email.mime import image
+from typing_extensions import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, File, UploadFile, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
@@ -13,6 +15,11 @@ from app.schemas.student import (
     StudentStatusUpdate,
     StudentUpdate,
 )
+from app.schemas.student_dashboard import StudentDashboardResponse
+from app.schemas.student_profile import StudentProfileResponse
+from app.services.student_dashboard_service import StudentDashboardService
+from app.services.student_profile_service import StudentProfileService
+from app.services.student_profile_service import StudentProfileService
 from app.services.student_service import StudentService
 
 router = APIRouter(
@@ -27,37 +34,42 @@ router = APIRouter(
     status_code=status.HTTP_201_CREATED,
 )
 def create_student(
-    payload: StudentCreate,
+    payload: Annotated[
+        StudentCreate,
+        Depends(StudentCreate.as_form),
+    ],
+    image: UploadFile | None = File(None),
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_admin)):
+    current_user: User = Depends(get_current_admin),
+):
     return StudentService.create_student(
-        db,
-        payload,
+        db=db,
+        payload=payload,
+        image=image,
     )
 
 
 @router.get(
     "",
-    response_model=list[StudentResponse],
+    response_model=list[StudentDashboardResponse],
 )
 def list_students(
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_admin)
+    current_user: User = Depends(get_current_admin),
 ):
-    return StudentService.get_students(db)
+    return StudentDashboardService.get_students(db)
 
 
 @router.get(
     "/{student_id}",
-    response_model=StudentResponse,
-
+    response_model=StudentProfileResponse,
 )
 def get_student(
     student_id: UUID,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_admin)
+    current_user: User = Depends(get_current_admin),
 ):
-    student = StudentService.get_student_by_id(
+    student = StudentProfileService.get_student_profile(
         db,
         student_id,
     )

@@ -1,9 +1,11 @@
 from datetime import date
 from uuid import UUID
-
+from fastapi import Form
+from fastapi import UploadFile
+from fastapi.params import File
 from pydantic import BaseModel, ConfigDict, EmailStr
 from enum import Enum
-
+from typing import Annotated
 from app.schemas.virtual_account import VirtualAccountResponse
 from app.schemas.class_schema import ClassSummary
 
@@ -33,6 +35,37 @@ class StudentCreate(BaseModel):
     parent_name: str
     parent_email: EmailStr | None = None
     parent_phone: str
+    
+
+    @classmethod
+    def as_form(
+        cls,
+        class_id: Annotated[UUID, Form(...)],
+        first_name: Annotated[str, Form(...)],
+        last_name: Annotated[str, Form(...)],
+        gender: Annotated[Gender, Form(...)],
+        parent_name: Annotated[str, Form(...)],
+        parent_phone: Annotated[str, Form(...)],
+
+        middle_name: Annotated[str | None, Form()] = None,
+        date_of_birth: Annotated[date | None, Form()] = None,
+        email: Annotated[EmailStr | None, Form()] = None,
+        phone: Annotated[str | None, Form()] = None,
+        parent_email: Annotated[EmailStr | None, Form()] = None,
+    ):
+        return cls(
+            class_id=class_id,
+            first_name=first_name,
+            last_name=last_name,
+            middle_name=middle_name,
+            gender=gender,
+            date_of_birth=date_of_birth,
+            email=email,
+            phone=phone,
+            parent_name=parent_name,
+            parent_email=parent_email,
+            parent_phone=parent_phone,
+        )
     
     
 
@@ -77,7 +110,7 @@ class StudentResponse(BaseModel):
     parent_name: str
     parent_email: EmailStr |None
     parent_phone: str
-
+    photo_url: str | None
     status: StudentStatus
 
 

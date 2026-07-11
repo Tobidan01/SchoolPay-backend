@@ -89,6 +89,15 @@ class Student(Base):
         nullable=False,
     )
 
+    photo_url = Column(
+        String(500),
+        nullable=True,
+    )
+
+    photo_public_id = Column(
+        String(255),
+        nullable=True,
+)
     status = Column(
         String(20),
         nullable=False,
@@ -109,6 +118,8 @@ class Student(Base):
         onupdate=func.now(),
         nullable=False,
     )
+
+    
 
     school_class = relationship(
         "Class",
@@ -131,11 +142,7 @@ class Student(Base):
         back_populates="student",
     )
     
-    student_class = relationship(
-        "Class",
-        back_populates="students",
-)
-
+    
     credits = relationship(
         "StudentCredit",
         back_populates="student",

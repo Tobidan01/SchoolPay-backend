@@ -1,7 +1,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from app.core import cloudinary_config
 from app.core.database import Base, engine
 from app.core.config import settings
+
 
 
 from app.routers import (
@@ -13,6 +15,7 @@ from app.routers import (
     student,
     virtual_account,
     webhook,
+    dashboard,
 )
 
 
@@ -45,6 +48,8 @@ app.include_router(invoice.router)
 app.include_router(webhook.router)
 app.include_router(fee_structure.router)
 app.include_router(payment.router)
+app.include_router(dashboard.router)
+
 
 
 @app.get("/")
