@@ -91,8 +91,7 @@ class StudentDashboardService:
 
                     full_name=f"{student.first_name} {student.last_name}",
 
-                    class_name=student.student_class.name,
-                    photo_url=student.photo_url,
+                    class_name=student.school_class.name if student.school_class else None,                    photo_url=student.photo_url,
                     virtual_account=(
                         virtual_account.account_number
                         if virtual_account

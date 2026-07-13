@@ -149,8 +149,4 @@ class Student(Base):
         cascade="all, delete-orphan",
 )
     
-    credit = relationship(
-        "StudentCredit",
-        back_populates="student",
-        uselist=False,
-)
+    
