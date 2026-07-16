@@ -1,6 +1,11 @@
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import (
+    APIRouter,
+    Depends,
+    HTTPException,
+    status,
+)
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
@@ -8,67 +13,44 @@ from app.core.dependencies import get_current_admin
 from app.models.user import User
 from app.schemas.invoice import (
     InvoiceCreate,
+    InvoiceDashboardPageResponse,
     InvoiceGenerateResponse,
     InvoiceResponse,
 )
 from app.services.invoice_service import InvoiceService
 
+
 router = APIRouter(
-    prefix="/invoices", 
+    prefix="/invoices",
     tags=["Invoices"],
 )
+
 
 @router.post(
     "/generate",
     response_model=InvoiceGenerateResponse,
-    status_code=201,
+    status_code=status.HTTP_201_CREATED,
 )
 def create_invoice(
     payload: InvoiceCreate,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_admin),
 ):
-    try:
-        return InvoiceService.generate_invoice(
-            db,
-            payload,
-)
+    return InvoiceService.generate_invoice(
+        db=db,
+        payload=payload,
+    )
 
-    except ValueError as e:
-        raise HTTPException(
-            status_code=400,
-            detail=str(e),
-        )
 
 @router.get(
     "",
-    response_model=list[InvoiceResponse],
+    response_model=InvoiceDashboardPageResponse,
 )
-def get_all_invoices(
+def get_invoices(
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_admin),
 ):
-    return InvoiceService.get_all(db)
-
-
-@router.get(
-    "/{invoice_id}",
-    response_model=InvoiceResponse,
-)
-def get_invoice(
-    invoice_id: UUID,
-    db: Session = Depends(get_db),
-):
-    try:
-        return InvoiceService.get_by_id(
-            db,
-            invoice_id,
-        )
-
-    except ValueError as e:
-        raise HTTPException(
-            status_code=404,
-            detail=str(e),
-        )
+    return InvoiceService.get_dashboard_page(db)
 
 
 @router.get(
@@ -78,8 +60,24 @@ def get_invoice(
 def get_student_invoices(
     student_id: UUID,
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_admin),
 ):
     return InvoiceService.get_student_invoices(
-        db,
-        student_id,
+        db=db,
+        student_id=student_id,
+    )
+
+
+@router.get(
+    "/{invoice_id}",
+    response_model=InvoiceResponse,
+)
+def get_invoice(
+    invoice_id: UUID,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_admin),
+):
+    return InvoiceService.get_by_id(
+        db=db,
+        invoice_id=invoice_id,
     )

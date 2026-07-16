@@ -15,7 +15,7 @@ from app.schemas.student import (
     StudentStatusUpdate,
     StudentUpdate,
 )
-from app.schemas.student_dashboard import StudentDashboardResponse
+from app.schemas.student_dashboard import StudentDashboardPageResponse
 from app.schemas.student_profile import StudentProfileResponse
 from app.services.student_dashboard_service import StudentDashboardService
 from app.services.student_profile_service import StudentProfileService
@@ -51,7 +51,7 @@ def create_student(
 
 @router.get(
     "",
-    response_model=list[StudentDashboardResponse],
+     response_model=StudentDashboardPageResponse,
 )
 def list_students(
     db: Session = Depends(get_db),

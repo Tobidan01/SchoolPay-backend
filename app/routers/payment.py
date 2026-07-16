@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.core.dependencies import get_current_admin
 from app.models.user import User
-from app.schemas.payment_schema import PaymentResponse
+from app.schemas.payment_schema import PaymentDashboardPageResponse, PaymentResponse
 from app.services.payment_service import PaymentService
 
 router = APIRouter(
@@ -22,13 +22,17 @@ router = APIRouter(
 
 @router.get(
     "",
-    response_model=list[PaymentResponse],
+    response_model=PaymentDashboardPageResponse,
 )
 def get_payments(
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_admin),
+    current_user: User = Depends(
+        get_current_admin
+    ),
 ):
-    return PaymentService.get_all(db)
+    return PaymentService.get_dashboard_page(
+        db
+    )
 
 
 @router.get(

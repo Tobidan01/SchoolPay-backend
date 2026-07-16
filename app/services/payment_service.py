@@ -1,7 +1,7 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from uuid import UUID
-
-from sqlalchemy.orm import Session
+from decimal import Decimal
+from sqlalchemy.orm import Session, joinedload
 
 from app.models.invoice import Invoice
 from app.models.payment import (
@@ -11,6 +11,7 @@ from app.models.payment import (
     PaymentStatus,
 )
 from app.models.student import Student
+from app.schemas.payment_schema import PaymentDashboardItem, PaymentDashboardPageResponse, PaymentDashboardSummary
 
 
 class PaymentService:
@@ -146,18 +147,229 @@ class PaymentService:
         db.refresh(payment)
 
         return payment
+    
 
     @staticmethod
-    def get_all(
+    def get_dashboard_page(
         db: Session,
-    ):
+    ) -> PaymentDashboardPageResponse:
 
-        return (
+        payments = (
             db.query(Payment)
+            .options(
+                joinedload(Payment.student)
+                .joinedload(Student.school_class),
+
+                joinedload(Payment.virtual_account),
+
+                joinedload(Payment.invoice),
+            )
             .order_by(
                 Payment.created_at.desc()
             )
             .all()
+        )
+
+        payment_rows: list[
+            PaymentDashboardItem
+        ] = []
+
+        todays_payments = 0
+        revenue_today = Decimal("0")
+        pending_payments = 0
+        underpaid_payments = 0
+
+        today = datetime.now(timezone.utc).date()
+
+        for payment in payments:
+            student = payment.student
+            invoice = payment.invoice
+            virtual_account = payment.virtual_account
+
+            amount = Decimal(
+                str(payment.amount or 0)
+            )
+
+            payment_status_value = (
+                payment.status.value
+                if hasattr(payment.status, "value")
+                else str(payment.status)
+            )
+
+            # -----------------------------------
+            # Dashboard status
+            # -----------------------------------
+
+            if payment_status_value == "PENDING":
+                dashboard_status = "PENDING"
+                pending_payments += 1
+
+            elif payment_status_value == "FAILED":
+                dashboard_status = "FAILED"
+
+            elif payment_status_value == "REVERSED":
+                dashboard_status = "REVERSED"
+
+            elif payment_status_value == "SUCCESS":
+
+                if invoice is None:
+                    dashboard_status = "PAID"
+
+                else:
+                    invoice_status_value = (
+                        invoice.status.value
+                        if hasattr(
+                            invoice.status,
+                            "value",
+                        )
+                        else str(invoice.status)
+                    )
+
+                    if (
+                        invoice_status_value
+                        == "PARTIALLY_PAID"
+                    ):
+                        dashboard_status = (
+                            "UNDERPAID"
+                        )
+                        underpaid_payments += 1
+
+                    elif (
+                        invoice_status_value
+                        == "OVERPAID"
+                    ):
+                        dashboard_status = (
+                            "OVERPAID"
+                        )
+
+                    else:
+                        dashboard_status = "PAID"
+
+            else:
+                dashboard_status = (
+                    payment_status_value
+                )
+
+            # -----------------------------------
+            # Today's summary
+            # -----------------------------------
+
+            payment_date = (
+                payment.paid_at
+                or payment.created_at
+            )
+
+            if (
+                payment_date is not None
+                and payment_date.date() == today
+            ):
+                todays_payments += 1
+
+                if (
+                    payment_status_value
+                    == "SUCCESS"
+                ):
+                    revenue_today += amount
+
+            # -----------------------------------
+            # Student fields
+            # -----------------------------------
+
+            if student is not None:
+                full_name = " ".join(
+                    part
+                    for part in [
+                        student.first_name,
+                        student.middle_name,
+                        student.last_name,
+                    ]
+                    if part
+                )
+
+                class_name = (
+                    student.school_class.name
+                    if student.school_class
+                    else None
+                )
+
+                photo_url = student.photo_url
+                student_id = student.id
+
+            else:
+                full_name = "Unknown Student"
+                class_name = None
+                photo_url = None
+                student_id = payment.student_id
+
+            # -----------------------------------
+            # Other row values
+            # -----------------------------------
+
+            transaction_reference = (
+                payment.provider_transaction_id
+                or payment.internal_reference
+            )
+
+            payment_method = (
+                payment.payment_method.value
+                if hasattr(
+                    payment.payment_method,
+                    "value",
+                )
+                else str(payment.payment_method)
+            )
+
+            bank_name = (
+                payment.payer_bank
+                or "Unknown Bank"
+            )
+
+            account_number = (
+                virtual_account.account_number
+                if virtual_account
+                else None
+            )
+
+            payment_rows.append(
+                PaymentDashboardItem(
+                    id=payment.id,
+                    student_id=student_id,
+
+                    full_name=full_name,
+                    class_name=class_name,
+                    photo_url=photo_url,
+
+                    transaction_reference=(
+                        transaction_reference
+                    ),
+
+                    amount=amount,
+
+                    bank_name=bank_name,
+                    payment_method=payment_method,
+
+                    paid_at=payment_date,
+
+                    account_number=(
+                        account_number
+                    ),
+
+                    status=dashboard_status,
+                )
+            )
+
+        summary = PaymentDashboardSummary(
+            todays_payments=todays_payments,
+            revenue_today=revenue_today,
+            pending_payments=pending_payments,
+            underpaid_payments=(
+                underpaid_payments
+            ),
+        )
+
+        return  PaymentDashboardPageResponse(
+            summary=summary,
+            payments=payment_rows,
         )
 
     @staticmethod

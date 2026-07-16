@@ -62,3 +62,36 @@ class PaymentResponse(PaymentBase):
     updated_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class PaymentDashboardItem(BaseModel):
+    id: UUID
+    student_id: UUID
+
+    full_name: str
+    class_name: str | None = None
+    photo_url: str | None = None
+
+    transaction_reference: str
+    amount: Decimal
+
+    bank_name: str | None = None
+    payment_method: str
+
+    paid_at: datetime | None = None
+
+    account_number: str | None = None
+
+    status: str
+
+
+class PaymentDashboardSummary(BaseModel):
+    todays_payments: int
+    revenue_today: Decimal
+    pending_payments: int
+    underpaid_payments: int
+
+
+class PaymentDashboardPageResponse(BaseModel):
+    summary: PaymentDashboardSummary
+    payments: list[PaymentDashboardItem]    

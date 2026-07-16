@@ -1,3 +1,4 @@
+from decimal import Decimal
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict
@@ -38,3 +39,52 @@ class VirtualAccountResponse(BaseModel):
 
     status: VirtualAccountStatus
     is_active: bool
+
+
+class VirtualAccountDashboardResponse(BaseModel):
+    id: UUID
+    student_id: UUID
+
+    full_name: str
+    class_name: str
+
+    photo_url: str | None = None
+
+    bank_name: str
+    account_number: str
+
+    expected_fee: Decimal
+    amount_paid: Decimal
+    outstanding_balance: Decimal
+
+    status: str   
+
+
+class VirtualAccountDashboardItem(BaseModel):
+    id: UUID
+    student_id: UUID
+
+    full_name: str
+    class_name: str | None = None
+    photo_url: str | None = None
+
+    bank_name: str
+    account_number: str
+
+    expected_fee: Decimal
+    amount_paid: Decimal
+    outstanding_balance: Decimal
+
+    status: str
+
+
+class VirtualAccountDashboardSummary(BaseModel):
+    total_accounts: int
+    active_accounts: int
+    amount_collected: Decimal
+    outstanding_balance: Decimal
+
+
+class VirtualAccountDashboardPageResponse(BaseModel):
+    summary: VirtualAccountDashboardSummary
+    virtual_accounts: list[VirtualAccountDashboardItem]     

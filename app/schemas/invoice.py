@@ -75,4 +75,32 @@ class InvoiceGenerateResponse(BaseModel):
 
     student: StudentInvoiceResponse
 
-    items: list[InvoiceItemResponse]    
+    items: list[InvoiceItemResponse]  
+
+class InvoiceDashboardItem(BaseModel):
+    id: UUID
+    student_id: UUID
+
+    full_name: str
+    photo_url: str | None = None
+
+    invoice_number: str
+    fee_type: str
+
+    amount: Decimal
+    due_date: date
+    amount_paid: Decimal
+
+    status: str
+
+
+class InvoiceDashboardSummary(BaseModel):
+    total_invoices: int
+    expected_revenue: Decimal
+    outstanding_balance: Decimal
+    paid_invoices: int
+
+
+class InvoiceDashboardPageResponse(BaseModel):
+    summary: InvoiceDashboardSummary
+    invoices: list[InvoiceDashboardItem]      

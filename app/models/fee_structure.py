@@ -1,9 +1,13 @@
-from datetime import datetime
-from decimal import Decimal
-from decimal import Decimal
 import uuid
+from decimal import Decimal
 
-from sqlalchemy import Column, DateTime, ForeignKey, String
+from sqlalchemy import (
+    Column,
+    DateTime,
+    ForeignKey,
+    String,
+    func,
+)
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
@@ -21,43 +25,47 @@ class FeeStructure(Base):
 
     class_id = Column(
         UUID(as_uuid=True),
-        ForeignKey("classes.id", ondelete="CASCADE"),
+        ForeignKey(
+            "classes.id",
+            ondelete="CASCADE",
+        ),
         nullable=False,
     )
 
     session = Column(
-        String,
+        String(20),
         nullable=False,
     )
 
     term = Column(
-        String,
+        String(30),
         nullable=False,
     )
 
     title = Column(
-        String,
+        String(150),
         nullable=False,
     )
 
     status = Column(
-        String,
-        default="ACTIVE",
+        String(20),
         nullable=False,
+        default="ACTIVE",
     )
 
     created_at = Column(
         DateTime(timezone=True),
-        default=datetime.utcnow,
+        server_default=func.now(),
+        nullable=False,
     )
 
     updated_at = Column(
         DateTime(timezone=True),
-        default=datetime.utcnow,
-        onupdate=datetime.utcnow,
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
     )
 
-    # Relationships
     school_class = relationship(
         "Class",
         back_populates="fee_structures",
@@ -72,6 +80,9 @@ class FeeStructure(Base):
     @property
     def total_amount(self) -> Decimal:
         return sum(
-            (item.amount for item in self.items),
+            (
+                item.amount
+                for item in self.items
+            ),
             Decimal("0.00"),
         )

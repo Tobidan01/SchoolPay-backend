@@ -145,6 +145,6 @@ class StudentSummary(BaseModel):
     last_name: str
     middle_name: str | None
 
-    student_class:  ClassSummary    
+    school_class:  ClassSummary    
 
     model_config = ConfigDict(from_attributes=True)                 

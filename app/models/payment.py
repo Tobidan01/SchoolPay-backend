@@ -56,7 +56,7 @@ class Payment(Base):
     invoice_id = Column(
         UUID(as_uuid=True),
         ForeignKey("invoices.id"),
-        nullable=False,
+        nullable=True,
     )
 
     virtual_account_id = Column(
@@ -84,6 +84,7 @@ class Payment(Base):
     provider_session_id = Column(
         String(255),
         nullable=True,
+         index=True,
     )
 
     # ==========================================================

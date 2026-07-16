@@ -86,9 +86,4 @@ class StudentCredit(Base):
 )
     
 
-    usages = relationship(
-        "StudentCreditUsage",
-        back_populates="credit",
-        cascade="all, delete-orphan",
-)
     

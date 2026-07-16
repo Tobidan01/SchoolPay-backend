@@ -46,12 +46,7 @@ class VirtualAccountService:
             .first()
         )
     
-    @staticmethod
-    def get_all(db: Session):
-        return (
-            db.query(VirtualAccount)
-            .all()
-    )
+   
 
 
     @staticmethod

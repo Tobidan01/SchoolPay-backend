@@ -1,4 +1,5 @@
 import uuid
+from decimal import Decimal
 
 from sqlalchemy import (
     Column,
@@ -33,7 +34,7 @@ class FeeStructureItem(Base):
     )
 
     title = Column(
-        String,
+        String(150),
         nullable=False,
     )
 
@@ -53,9 +54,14 @@ class FeeStructureItem(Base):
         nullable=False,
     )
 
-    
-
     fee_structure = relationship(
         "FeeStructure",
         back_populates="items",
     )
+
+    @property
+    def amount(self) -> Decimal:
+        return (
+            Decimal(str(self.quantity))
+            * Decimal(str(self.unit_price))
+        )

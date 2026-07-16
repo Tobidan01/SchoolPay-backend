@@ -8,7 +8,9 @@ from app.core.dependencies import get_current_admin
 from app.models.user import User
 from app.schemas.virtual_account import (
     VirtualAccountResponse,
+    VirtualAccountDashboardPageResponse,
 )
+from app.services.virtual_account_dashboard_service import VirtualAccountDashboardService
 from app.services.virtual_account_service import (
     VirtualAccountService,
 )
@@ -69,11 +71,13 @@ def get_virtual_account(
 
 @router.get(
     "",
-    response_model=list[VirtualAccountResponse],
+ response_model=VirtualAccountDashboardPageResponse,
 )
 def get_virtual_accounts(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_admin)
 ):
-    return VirtualAccountService.get_all(db)
-
+     return (
+        VirtualAccountDashboardService
+        .get_virtual_accounts(db)
+    )

@@ -1,0 +1,33 @@
+{
+  "event_type": "payment_success",
+  "requestId": "LOCAL-REQ-001",
+  "data": {
+    "merchant": {
+      "walletId": "test-wallet-id",
+      "walletBalance": 500000,
+      "userId": "test-user-id"
+    },
+    "terminal": {},
+    "transaction": {
+      "aliasAccountNumber": "6342297571",
+      "aliasAccountName": "Nomba/Test Student",
+      "aliasAccountReference": "LOCAL-VA-REF-001",
+      "aliasAccountType": "VIRTUAL",
+      "transactionId": "LOCAL-TXN-001",
+      "sessionId": "LOCAL-SESSION-001",
+      "transactionAmount": 5000,
+      "narration": "Local partial school fee test",
+      "fee": 0,
+      "type": "vact_transfer",
+      "originatingFrom": "api",
+      "responseCode": "",
+      "time": "2026-07-15T12:00:00Z"
+    },
+    "customer": {
+      "bankCode": "058",
+      "bankName": "GTBank",
+      "senderName": "Test Parent",
+      "accountNumber": "0123456789"
+    }
+  }
+}
